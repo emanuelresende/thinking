@@ -64,7 +64,29 @@ def selecionar_arquivo():
         label_arquivoselecionado['text'] = f"Arquivo selecionado: {caminho_arquivo}"
 
 def atualizar_cotacoes():
-    pass
+    #ler df de moedas com a variavel criada tk.StringVar para ser acessada
+    df = pd.read_excel(var_caminhoarquivo.get())
+    moedas = df.iloc[:, 0]
+    #pegar a data inicial e data final das cotacoes
+    data_inicial = calendario_cotacaoinicial.get()
+    data_final = calendario_cotacaofinal.get()
+    ano_inicial = data_inicial[-4:]
+    mes_inicial = data_inicial [3:5]
+    dia_inicial = data_inicial[:2]
+
+    ano_final = data_final[-4:]
+    mes_final = data_final[3:5]
+    dia_final = data_final[:2]
+
+    for moeda in moedas:
+        link = link = f'https://economia.awesomeapi.com.br/{moeda}-BRL/10?' \
+                      f'start_date={ano_inicial}{mes_inicial}{dia_inicial}& ' \
+                      f'end_date={ano_final}{mes_final}{dia_final}'
+        requisicao_moeda = requests.get(link)
+        cotacoes = requisicao_moeda.json() #editando o json para lista
+        
+
+
 
 label_variasmoedas = tk.Label(text='Varias Cotações', foreground='white', background='black', borderwidth=2, relief='solid')
 label_variasmoedas.grid(row=4, column=0, padx=10, pady=10, columnspan=3, sticky='NSEW')
@@ -89,8 +111,8 @@ calendario_cotacaoinicial.grid(row=7, column=1, padx=10, pady=10)
 label_datafinal = tk.Label(text='Data Inicial')
 label_datafinal.grid(row=8, column=0, padx=10, pady=10, sticky='nwse')
 
-calendario_cotacaoinicial = DateEntry(year=2021, locale='pt_br')
-calendario_cotacaoinicial.grid(row=8, column=1, padx=10, pady=10)
+calendario_cotacaofinal = DateEntry(year=2021, locale='pt_br')
+calendario_cotacaofinal.grid(row=8, column=1, padx=10, pady=10)
 
 botao_atualizarcotacoes = tk.Button(text='Atualizar cotações', command=atualizar_cotacoes)
 botao_atualizarcotacoes.grid(row=9, column=0, padx=10, pady=10, sticky='nwse')
