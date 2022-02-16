@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from tkcalendar import DateEntry
+from tkinter.filedialog import askopenfilename
+import pandas as pd
 import requests
 
 requisicao = requests.get('https://economia.awesomeapi.com.br/json/all') #adicionando o API da lista de moedas
@@ -10,8 +12,8 @@ moedas = list(dicionario_moedas.keys())
 janela = tk.Tk()
 
 #editando a janela automaticamente
-janela.rowconfigure(0,weight=1)
-janela.columnconfigure([0,1], weight=1)
+janela.rowconfigure(0, weight=1)
+janela.columnconfigure([0, 1], weight=1)
 
 janela.title('Cotação de Moedas')
 
@@ -56,7 +58,10 @@ botao_cotacao.grid(row=3, column=2, padx=10, pady=10, columnspan=2, sticky='nwse
 # -----varias moedas-----
 
 def selecionar_arquivo():
-    pass
+    caminho_arquivo = askopenfilename(title='Selecione o arquivo de Moeda')
+    var_caminhoarquivo.set(caminho_arquivo) #set adiciona o caminho_arquivo no tk.StringVar
+    if caminho_arquivo:
+        label_arquivoselecionado['text'] = f"Arquivo selecionado: {caminho_arquivo}"
 
 def atualizar_cotacoes():
     pass
@@ -66,6 +71,8 @@ label_variasmoedas.grid(row=4, column=0, padx=10, pady=10, columnspan=3, sticky=
 
 label_cotarvariasmoedas = tk.Label(text='Selecione o arquivo em excel com as moedas na coluna A')
 label_cotarvariasmoedas.grid(row=5, column=0, padx=10, pady=10, columnspan=2, sticky='NSEW')
+
+var_caminhoarquivo = tk.StringVar() #criação de uma variavel para ser acessada fora da def selecionar_arquivo()
 
 botao_selecionararquivo = tk.Button(text='Enviar Arquivo', command=selecionar_arquivo)
 botao_selecionararquivo.grid(row=5, column=2, padx=10, pady=10, sticky='NWSE')
