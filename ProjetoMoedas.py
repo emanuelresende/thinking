@@ -1,8 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
 from tkcalendar import DateEntry
-from tkinter.filedialog import askopenfilename
-import pandas as pd
+import requests
+
+requisicao = requests.get('https://economia.awesomeapi.com.br/json/all') #adicionando o API da lista de moedas
+dicionario_moedas = requisicao.json()
+moedas = list(dicionario_moedas.keys())
 
 janela = tk.Tk()
 
@@ -12,20 +15,18 @@ janela.columnconfigure([0,1], weight=1)
 
 janela.title('Cotação de Moedas')
 
-dicionario_cotacoes = {
-    'Dólar': 5.47,
-    'Euro': 8.00,
-    'Bit': 20000,
-}
-
-moedas = list(dicionario_cotacoes.keys())
-
-
+#para pegar a cotação, usar o link do json para datas especificas
 def pegar_cotacao():
     moeda_escolhida = combobox_moeda.get()
-    valor_moeda = dicionario_cotacoes.get(moeda_escolhida)
-    if valor_moeda:
-        print(f'Cotação na data {calendario_cotacao.get()} {moeda_escolhida} {valor_moeda}')
+    data_cotacao = calendario_cotacao.get()
+    ano = data_cotacao[-4:]
+    mes = data_cotacao[3:5]
+    dia = data_cotacao[:2]
+    link = f'https://economia.awesomeapi.com.br/{moeda_escolhida}-BRL/10?start_date={ano}{mes}{dia}&end_date={ano}{mes}{dia}'
+    requisicao_moeda = requests.get(link)
+    cotacao = requisicao_moeda.json() #editando o json para lista
+    valor_moeda = cotacao[0]['bid']
+    label_textocotacao['text'] = f"A cotação da {moeda_escolhida} no dia {data_cotacao} foi de: R$ {valor_moeda}"
 
 # -----cotacao unica-----
 label_moeda = tk.Label(text='Edite sua cotação', foreground='white', background='black', borderwidth=2, relief='solid')
