@@ -4,6 +4,8 @@ from tkcalendar import DateEntry
 from tkinter.filedialog import askopenfilename
 import pandas as pd
 import requests
+from datetime import datetime
+import numpy as np
 
 requisicao = requests.get('https://economia.awesomeapi.com.br/json/all') #adicionando o API da lista de moedas
 dicionario_moedas = requisicao.json()
@@ -64,27 +66,45 @@ def selecionar_arquivo():
         label_arquivoselecionado['text'] = f"Arquivo selecionado: {caminho_arquivo}"
 
 def atualizar_cotacoes():
-    #ler df de moedas com a variavel criada tk.StringVar para ser acessada
-    df = pd.read_excel(var_caminhoarquivo.get())
-    moedas = df.iloc[:, 0]
-    #pegar a data inicial e data final das cotacoes
-    data_inicial = calendario_cotacaoinicial.get()
-    data_final = calendario_cotacaofinal.get()
-    ano_inicial = data_inicial[-4:]
-    mes_inicial = data_inicial [3:5]
-    dia_inicial = data_inicial[:2]
+    try:
+        #ler df de moedas com a variavel criada tk.StringVar para ser acessada
+        df = pd.read_excel(var_caminhoarquivo.get())
+        moedas = df.iloc[:, 0]
+        #pegar a data inicial e data final das cotacoes
+        data_inicial = calendario_cotacaoinicial.get()
+        data_final = calendario_cotacaofinal.get()
 
-    ano_final = data_final[-4:]
-    mes_final = data_final[3:5]
-    dia_final = data_final[:2]
+        ano_inicial = data_inicial[-4:]
+        mes_inicial = data_inicial[3:5]
+        dia_inicial = data_inicial[:2]
 
-    for moeda in moedas:
-        link = link = f'https://economia.awesomeapi.com.br/{moeda}-BRL/10?' \
-                      f'start_date={ano_inicial}{mes_inicial}{dia_inicial}& ' \
-                      f'end_date={ano_final}{mes_final}{dia_final}'
-        requisicao_moeda = requests.get(link)
-        cotacoes = requisicao_moeda.json() #editando o json para lista
-        
+        ano_final = data_final[-4:]
+        mes_final = data_final[3:5]
+        dia_final = data_final[:2]
+
+        for moeda in moedas:
+            link = f'https://economia.awesomeapi.com.br/{moeda}-BRL/10?' \
+                          f'start_date={ano_inicial}{mes_inicial}{dia_inicial}&' \
+                          f'end_date={ano_final}{mes_final}{dia_final}'
+
+            requisicao_moeda = requests.get(link)
+            cotacoes = requisicao_moeda.json() #editando o json para lista
+
+            for cotacao in cotacoes:
+                timestamp = int(cotacao['timestamp'])
+                bid = float(cotacao['bid'])
+                data = datetime.fromtimestamp(timestamp)
+                data = data.strftime('%d/%m/%Y')
+                #print(timestamp)
+                if data not in df:
+                    df[data] = np.nan
+
+                df.loc[df.iloc[:, 0] == moeda, data] = bid
+                print(bid)
+        df.to_excel("Teste.xlsx")
+        label_atualizarcotacoes['text'] = "Arquivo atualizado com sucesso"
+    except:
+        label_atualizarcotacoes['text'] = "Selecione um arquivo excel no formato correto"
 
 
 
